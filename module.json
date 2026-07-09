@@ -26,5 +26,8 @@
       { "id": "diwako-cpred-additions", "type": "module", "compatibility": {} }
     ]
   },
-  "compatibility": { "minimum": "12.343", "maximum": "12.999", "verified": "12.343" }
+  "compatibility": { "minimum": "12.343", "maximum": "12.999", "verified": "12.343" },
+  "url": "https://github.com/Vec97/cpred-evasion-workflow",
+  "manifest": "https://github.com/Vec97/cpred-evasion-workflow/releases/latest/download/module.json",
+  "download": "https://github.com/Vec97/cpred-evasion-workflow/releases/download/v0.4.0/module.zip"
 }
