@@ -12,16 +12,17 @@
  * _applyDamage with the same argument shape the system uses at its own call site
  * (cpr-chat.js:547 -> cpr-actor.js:1299). VERIFIED against the installed build.
  *
- * Grenades/rockets/thrown and autofire/aimed shots are excluded UPSTREAM (detect.js computes
- * damageEligible); this handler assumes a basic single-shot ranged or a melee weapon and rolls a
- * plain DAMAGE roll (never AIMED/AUTOFIRE), so location stays "body".
+ * Grenades/rockets/thrown and autofire shots are excluded UPSTREAM (detect.js computes
+ * damageEligible). This handler rolls a plain single-shot DAMAGE roll (location "body") for basic
+ * ranged/melee, or an AIMED damage roll at the attacker's chosen location (default head) when the
+ * payload's `aimed` flag is set.
  *
  * Return contract: { applied:boolean, total?:number, bonus?:number, critical?:boolean,
  *                    location?:string, reason?:string }. applied:false (or a thrown/rejected
  *  executeAsGM) makes the caller fall back to the "attacker rolls damage manually" result card.
  */
 import { LOG } from "./constants.js";
-import { getDamageRollType, getRenderRollCard } from "./cprSystem.js";
+import { getDamageRollType, getAimedRollType, getRenderRollCard } from "./cprSystem.js";
 
 /**
  * Roll + apply the attacker's weapon damage to the target. Runs on the GM client.
@@ -45,6 +46,7 @@ export async function onDamageRequest(payload) {
     defActorId,
     defTokenId,
     defSceneId,
+    aimed,
   } = payload;
 
   // (1) Resolve the ATTACKER actor (token-first so unlinked tokens use their own actor).
@@ -72,11 +74,20 @@ export async function onDamageRequest(payload) {
     return { applied: false, reason: "noTarget" };
   }
 
-  // (4) Build + roll the weapon damage through the system pipeline (plain DAMAGE roll).
-  const dmg = weapon.createRoll(getDamageRollType(), atkActor);
+  // (4) Build + roll the weapon damage through the system pipeline. An Aimed Shot is rolled as an
+  //     aimed damage roll (isAimed=true) so the hit-location / headshot rules apply; otherwise a
+  //     plain single-shot damage roll (location "body").
+  const dmg = aimed
+    ? weapon.createRoll(getDamageRollType(), atkActor, { damageType: getAimedRollType() })
+    : weapon.createRoll(getDamageRollType(), atkActor);
   if (!dmg) {
     console.warn(`${LOG} | onDamageRequest: weapon.createRoll(DAMAGE) returned null`, payload);
     return { applied: false, reason: "noRoll" };
+  }
+  // Honor the location the attacker deliberately aimed at (stored on the attacker actor when the
+  // aimed attack was made). Defaults to "head" - an aimed shot with no stored location aims high.
+  if (aimed) {
+    dmg.location = atkActor.getFlag(game.system.id, "aimedLocation") || "head";
   }
   await dmg.roll();
 
@@ -101,7 +112,10 @@ export async function onDamageRequest(payload) {
       ? dmg.wasCritSuccess()
       : dmg.faces.filter((f) => f === 6).length >= 2; // 2+ sixes
   const bonusDamage = criticalCard ? dmg.bonusDamage ?? 5 : 0;
-  const location = dmg.isAimed ? dmg.location : "body";
+  // _applyDamage only distinguishes head / brain / body (matching the system's own damage button),
+  // so coerce any limb / held-item aim down to body; head and brain keep their special handling.
+  let location = dmg.isAimed ? dmg.location : "body";
+  if (location !== "head" && location !== "brain") location = "body";
   const ea = dmg.rollCardExtraArgs ?? {};
   const damageLethal = ea.ammoType !== "rubber";
   const ablation = ea.ablationValue ?? 1;

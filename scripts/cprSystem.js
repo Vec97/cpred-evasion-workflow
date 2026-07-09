@@ -74,6 +74,11 @@ export function getDamageRollType() {
   return CPRRolls?.rollTypes?.DAMAGE ?? "damage";
 }
 
+/** rollTypes.AIMED, resilient to a failed import. The string value is "aimed". */
+export function getAimedRollType() {
+  return CPRRolls?.rollTypes?.AIMED ?? "aimed";
+}
+
 /** The CPRSkillRoll class (used for the untrained-melee bare-stat defense), or null. */
 export function getCPRSkillRoll() {
   return CPRRolls?.CPRSkillRoll ?? null;

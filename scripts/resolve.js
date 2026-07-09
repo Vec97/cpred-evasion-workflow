@@ -152,6 +152,7 @@ async function maybeApplyDamage(ctx) {
       defActorId: ctx.defActorId,
       defTokenId: ctx.defTokenId,
       defSceneId: ctx.defSceneId,
+      aimed: ctx.aimed,
     });
     if (res && res.applied) return res;
     console.warn(`${LOG} | auto-damage not applied (falling back to manual)`, res);

@@ -39,9 +39,11 @@ is no separate *Roll Damage* → *Apply* clicking (`Auto-roll and apply damage o
 
 - Runs on a **GM client** (via socketlib), which has the rights to read the attacker and mutate the
   target. Damage math is **never** reimplemented — it uses `Actor#_applyDamage`.
+- **Aimed shots are supported**: damage is rolled as an aimed (located) damage roll, using the
+  location the attacker aimed at (defaulting to the head, with the headshot damage rules applied).
 - **Excluded** (fall back to the manual *Roll Damage* button): grenade/rocket launchers, thrown
-  weapons, and autofire/aimed shots. Regular single-shot ranged weapons and melee weapons are
-  eligible. If no GM is connected, it also falls back to manual.
+  weapons, and autofire shots. Regular single-shot ranged weapons, aimed shots, and melee weapons
+  are eligible. If no GM is connected, it also falls back to manual.
 
 ## Requirements
 

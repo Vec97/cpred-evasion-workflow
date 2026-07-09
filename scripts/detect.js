@@ -81,8 +81,11 @@ export async function onCreateChatMessage(message) {
     (atkActor ? canvas.scene?.tokens.getName(atkActor.prototypeToken.name) : null);
 
   // (10c) Auto-damage eligibility, computed on the attacker client. Grenades/rockets/thrown and
-  // autofire/aimed shots are excluded (user: "keine Granaten", plus AoE/aimed are out of scope).
+  // autofire are excluded (user: "keine Granaten"; autofire multiplier is out of scope). Aimed
+  // shots ARE eligible and are rolled as a located damage roll on the GM client.
   const damageEligible = computeDamageEligible(weapon, subtitle);
+  // Whether this was an Aimed Shot -> its damage is rolled as an aimed (head/limb) damage roll.
+  const aimed = subtitle === game.i18n.localize("CPR.rolls.aimedShot");
 
   // (10d) BLIND DECISION: we NO LONGER gate the ranged prompt on a hit. The target must choose
   // Evade/Tank BEFORE learning hit/miss (otherwise they meta-game the better option). Instead we
@@ -124,6 +127,8 @@ export async function onCreateChatMessage(message) {
     // Whether auto-damage may run for this attack (still further gated by the autoDamage setting
     // and by an active GM at resolution time).
     damageEligible,
+    // Aimed Shot -> the GM damage step rolls an aimed (located) damage roll instead of a plain one.
+    aimed,
   };
 
   // Local (this-client) GM resolution helper, reused by the no-user and emit-failure paths.
@@ -235,9 +240,10 @@ function computeCanEvadeRanged(defActor) {
 function computeDamageEligible(weapon, subtitle) {
   const excluded = ["grenadeLauncher", "rocketLauncher", "thrownWeapon"];
   if (excluded.includes(weapon.system?.weaponType)) return false;
+  // Autofire damage uses a per-shot multiplier we do not compute -> leave it manual.
+  // Aimed shots ARE eligible: damage.js rolls them as a located (head/limb) damage roll.
   const autofireLabel = game.i18n.localize("CPR.global.itemType.skill.autofire");
-  const aimedLabel = game.i18n.localize("CPR.rolls.aimedShot");
-  if (subtitle && (subtitle === autofireLabel || subtitle === aimedLabel)) return false;
+  if (subtitle && subtitle === autofireLabel) return false;
   return true;
 }
 
