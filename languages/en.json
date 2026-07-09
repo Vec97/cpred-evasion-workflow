@@ -1,0 +1,78 @@
+{
+  "cpred-evasion-workflow": {
+    "settings": {
+      "enableRangedPrompt": {
+        "name": "Prompt on ranged attack",
+        "hint": "When a ranged attack targets a token, ask the target's controlling user to Evade or Tank BEFORE hit/miss is revealed (blind decision). If off, ranged attacks are left to the attacker/GM (no prompt, no auto-roll)."
+      },
+      "enableAutoMelee": {
+        "name": "Auto-resolve melee defense",
+        "hint": "Melee and thrown-in-melee attacks automatically roll the target's Evasion as an opposed roll, with no prompt. If off, melee is not auto-resolved."
+      },
+      "enforceRef8Gate": {
+        "name": "Require REF 8+ to dodge bullets",
+        "hint": "When on, the ranged Evade option is only offered if the target has REF 8 or higher (Dodging Bullets); otherwise Evade is disabled with a tooltip. Never affects melee."
+      },
+      "promptTimeoutSeconds": {
+        "name": "Prompt timeout (seconds)",
+        "hint": "Seconds to wait for the target's choice before defaulting to Tank. 0 waits indefinitely."
+      },
+      "whisperResult": {
+        "name": "Result visibility",
+        "hint": "Who can see the evasion result card.",
+        "public": "Public",
+        "gm": "GM only",
+        "both": "GM and involved players"
+      },
+      "tieGoesToDefender": {
+        "name": "Ties favor the defender",
+        "hint": "On an equal opposed total the attack is dodged (Evasion >= Attack). If off, the defender must strictly beat the attack (Evasion > Attack)."
+      },
+      "autoDamage": {
+        "name": "Auto-roll and apply damage on a hit",
+        "hint": "When a hit is confirmed, automatically roll the weapon's damage and apply it to the target via the system's own damage pipeline (armor ablation + HP). Runs on a GM client. Excludes grenades/rockets/thrown weapons and autofire/aimed shots; those fall back to the manual Roll Damage button. If off, damage is always rolled manually."
+      },
+      "suppressDiwakoHit": {
+        "name": "Hide Diwako's hit/miss line",
+        "hint": "When on and diwako-cpred-additions is active, cancel Diwako's plain hit/miss chat line so it cannot spoil the result before the target chooses Evade or Tank (blind decision). Diwako's Sequencer hit/miss animations, if enabled, are not affected."
+      },
+      "blindAttackRoll": {
+        "name": "Hide the attack roll from the defending player",
+        "hint": "When on, a ranged attack roll aimed at a player-controlled target is whispered to the GM and attacker only, so the defending player must choose Evade or Tank BEFORE seeing how high the roll is (anti-metagame). The numbers appear in the result card after they decide. Targets controlled by the GM (NPCs) are never blinded. Requires the ranged prompt to be enabled."
+      },
+      "logMissingTarget": {
+        "name": "Log attacks with no target",
+        "hint": "When on, log a console note if an attack card has no target (mirrors Diwako). Off by default to reduce noise."
+      }
+    },
+    "prompt": {
+      "title": "Incoming Attack!",
+      "body": "{attacker} attacks {target}. Evade or take the hit?",
+      "evade": "Evade (Evasion)",
+      "tank": "Tank it",
+      "cannotEvade": "Cannot dodge this ranged attack (needs REF 8+ and an Evasion skill).",
+      "waiting": "Waiting for {target} to respond...",
+      "timedOut": "{target} did not respond in time - the hit stands."
+    },
+    "result": {
+      "dodged": "{target} DODGED! Evasion {evasion} beats attack {attack}. Attack negated.",
+      "failed": "{target} FAILED to evade. Evasion {evasion} vs attack {attack}.",
+      "tanked": "{target} chose to tank the hit.",
+      "missedAnyway": "{target} braced to tank, but the shot missed anyway (attack {attack} vs DV {dv}). No damage.",
+      "meleeDodged": "{target} evaded the melee attack. Evasion {evasion} vs attack {attack}. Attack negated.",
+      "meleeHit": "{target} was hit in melee. Evasion {evasion} vs attack {attack}.",
+      "meleeDodgedUntrained": "{target} (untrained) evaded the melee attack with a bare REF/DEX roll. {evasion} vs attack {attack}. Attack negated.",
+      "meleeHitUntrained": "{target} (untrained, no Evasion skill) was hit in melee. Bare defense {evasion} vs attack {attack}.",
+      "damageAuto": "Damage {damage} was rolled and applied automatically.",
+      "damageManual": "Hit stands - attacker rolls damage via the Roll Damage button."
+    },
+    "error": {
+      "noEvasionSkill": "{target} has no usable Evasion skill and could not defend.",
+      "noTarget": "No target was selected for the attack.",
+      "noResponsibleUser": "No connected owner or GM to resolve the defender's Evasion.",
+      "noSocketlib": "Cyberpunk RED - Evasion Workflow requires the socketlib module, which is not active.",
+      "noSocketFlag": "Cyberpunk RED - Evasion Workflow could not register its socket. Ensure the module manifest has \"socket\": true, then restart Foundry and reload the world.",
+      "emitFailed": "Could not reach {target}'s controlling user to resolve Evasion (they may have disconnected). Resolve the defense manually."
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "cpred-evasion-workflow",
+  "title": "Cyberpunk RED - Evasion Workflow",
+  "description": "Interactive Evasion/Dodge workflow for Cyberpunk RED. On a ranged attack the target's controlling user is prompted to Evade (Ausweichen) or Tank (Tanken) BEFORE hit/miss is revealed (blind decision), and Diwako's spoiler hit/miss line is optionally suppressed. Melee and thrown-in-melee attacks auto-resolve the opposed Evasion roll with no prompt. On a confirmed hit the module can optionally auto-roll AND apply the weapon damage via the system's own damage pipeline (GM-routed; grenades/rockets/thrown and autofire/aimed shots fall back to the manual Roll Damage button). Coexists with diwako-cpred-additions without modifying it.",
+  "version": "0.3.0",
+  "authors": [{ "name": "yioxar", "flags": {} }],
+  "socket": true,
+  "esmodules": ["scripts/main.js"],
+  "styles": ["css/evasion.css"],
+  "languages": [
+    { "lang": "en", "name": "English", "path": "languages/en.json", "flags": {} },
+    { "lang": "de", "name": "Deutsch", "path": "languages/de.json", "flags": {} }
+  ],
+  "relationships": {
+    "systems": [
+      {
+        "id": "cyberpunk-red-core",
+        "type": "system",
+        "compatibility": { "minimum": "v0.89.1", "maximum": "v0.99.99", "verified": "v0.92.4" }
+      }
+    ],
+    "requires": [
+      { "id": "socketlib", "type": "module" }
+    ],
+    "recommends": [
+      { "id": "diwako-cpred-additions", "type": "module", "compatibility": {} }
+    ]
+  },
+  "compatibility": { "minimum": "12.343", "maximum": "12.999", "verified": "12.343" }
+}

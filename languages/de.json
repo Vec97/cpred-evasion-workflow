@@ -1,0 +1,78 @@
+{
+  "cpred-evasion-workflow": {
+    "settings": {
+      "enableRangedPrompt": {
+        "name": "Abfrage bei Fernkampfangriff",
+        "hint": "Wenn ein Fernkampfangriff ein Token anvisiert, wird der steuernde Benutzer des Ziels gefragt, ob ausgewichen oder getankt wird - BEVOR Treffer/Fehlschuss bekannt ist (blinde Entscheidung). Wenn aus, bleibt der Fernkampfangriff dem Angreifer/GM ueberlassen (keine Abfrage, kein automatischer Wurf)."
+      },
+      "enableAutoMelee": {
+        "name": "Nahkampf-Verteidigung automatisch aufloesen",
+        "hint": "Nahkampf- und im Nahkampf geworfene Angriffe wuerfeln automatisch das Ausweichen des Ziels als vergleichenden Wurf, ohne Abfrage. Wenn aus, wird Nahkampf nicht automatisch aufgeloest."
+      },
+      "enforceRef8Gate": {
+        "name": "REF 8+ zum Ausweichen von Kugeln erforderlich",
+        "hint": "Wenn an, wird die Ausweichen-Option im Fernkampf nur angeboten, wenn das Ziel REF 8 oder hoeher hat (Dodging Bullets); sonst ist Ausweichen deaktiviert (mit Tooltip). Betrifft niemals den Nahkampf."
+      },
+      "promptTimeoutSeconds": {
+        "name": "Zeitlimit der Abfrage (Sekunden)",
+        "hint": "Sekunden, die auf die Wahl des Ziels gewartet wird, bevor auf Tanken zurueckgefallen wird. 0 wartet unbegrenzt."
+      },
+      "whisperResult": {
+        "name": "Sichtbarkeit des Ergebnisses",
+        "hint": "Wer die Ausweichen-Ergebniskarte sehen kann.",
+        "public": "Oeffentlich",
+        "gm": "Nur GM",
+        "both": "GM und beteiligte Spieler"
+      },
+      "tieGoesToDefender": {
+        "name": "Gleichstand zugunsten des Verteidigers",
+        "hint": "Bei gleichem vergleichenden Ergebnis wird der Angriff ausgewichen (Ausweichen >= Angriff). Wenn aus, muss der Verteidiger den Angriff echt uebertreffen (Ausweichen > Angriff)."
+      },
+      "autoDamage": {
+        "name": "Schaden bei Treffer automatisch wuerfeln und anwenden",
+        "hint": "Wenn ein Treffer bestaetigt ist, wird der Waffenschaden automatisch gewuerfelt und ueber die systemeigene Schadenspipeline (Ruestungsabtrag + TP) auf das Ziel angewendet. Laeuft auf einem GM-Client. Ausgenommen sind Granaten/Raketen/geworfene Waffen sowie Feuerstoss- und gezielte Schuesse; diese fallen auf die manuelle Schaden-wuerfeln-Schaltflaeche zurueck. Wenn aus, wird Schaden immer manuell gewuerfelt."
+      },
+      "suppressDiwakoHit": {
+        "name": "Diwakos Treffer-/Fehl-Zeile ausblenden",
+        "hint": "Wenn an und diwako-cpred-additions aktiv ist, wird Diwakos einfache Treffer-/Fehl-Chatzeile unterdrueckt, damit sie das Ergebnis nicht verraet, bevor das Ziel Ausweichen oder Tanken waehlt (blinde Entscheidung). Diwakos Sequencer-Treffer-/Fehl-Animationen (falls aktiv) sind davon nicht betroffen."
+      },
+      "blindAttackRoll": {
+        "name": "Angriffswurf vor dem verteidigenden Spieler verbergen",
+        "hint": "Wenn an, wird ein Fernkampf-Angriffswurf auf ein spielergesteuertes Ziel nur dem GM und dem Angreifer zugefluestert, damit der verteidigende Spieler Ausweichen oder Tanken waehlen muss, BEVOR er sieht, wie hoch der Wurf ist (gegen Metagaming). Die Zahlen erscheinen nach der Entscheidung in der Ergebniskarte. Vom GM gesteuerte Ziele (NPCs) werden nie verborgen. Erfordert, dass die Fernkampf-Abfrage aktiv ist."
+      },
+      "logMissingTarget": {
+        "name": "Angriffe ohne Ziel protokollieren",
+        "hint": "Wenn an, wird eine Konsolennotiz protokolliert, falls eine Angriffskarte kein Ziel hat (wie bei Diwako). Standardmaessig aus, um Rauschen zu reduzieren."
+      }
+    },
+    "prompt": {
+      "title": "Eingehender Angriff!",
+      "body": "{attacker} greift {target} an. Ausweichen oder den Treffer hinnehmen?",
+      "evade": "Ausweichen (Evasion)",
+      "tank": "Tanken",
+      "cannotEvade": "Diesem Fernkampfangriff kann nicht ausgewichen werden (benoetigt REF 8+ und die Fertigkeit Evasion).",
+      "waiting": "Warte auf die Antwort von {target}...",
+      "timedOut": "{target} hat nicht rechtzeitig reagiert - der Treffer bleibt bestehen."
+    },
+    "result": {
+      "dodged": "{target} ist AUSGEWICHEN! Ausweichen {evasion} schlaegt Angriff {attack}. Angriff abgewehrt.",
+      "failed": "{target} konnte NICHT ausweichen. Ausweichen {evasion} gegen Angriff {attack}.",
+      "tanked": "{target} nimmt den Treffer hin.",
+      "missedAnyway": "{target} wollte tanken, aber der Schuss ging daneben (Angriff {attack} gegen DV {dv}). Kein Schaden.",
+      "meleeDodged": "{target} ist dem Nahkampfangriff ausgewichen. Ausweichen {evasion} gegen Angriff {attack}. Angriff abgewehrt.",
+      "meleeHit": "{target} wurde im Nahkampf getroffen. Ausweichen {evasion} gegen Angriff {attack}.",
+      "meleeDodgedUntrained": "{target} (untrainiert) ist dem Nahkampfangriff mit einem blanken REF/DEX-Wurf ausgewichen. {evasion} gegen Angriff {attack}. Angriff abgewehrt.",
+      "meleeHitUntrained": "{target} (untrainiert, keine Fertigkeit Evasion) wurde im Nahkampf getroffen. Blanke Verteidigung {evasion} gegen Angriff {attack}.",
+      "damageAuto": "Schaden {damage} wurde automatisch gewuerfelt und angewendet.",
+      "damageManual": "Treffer bleibt bestehen - der Angreifer wuerfelt Schaden ueber die Schaden-wuerfeln-Schaltflaeche."
+    },
+    "error": {
+      "noEvasionSkill": "{target} hat keine nutzbare Fertigkeit Evasion und konnte sich nicht verteidigen.",
+      "noTarget": "Fuer den Angriff wurde kein Ziel ausgewaehlt.",
+      "noResponsibleUser": "Kein verbundener Besitzer oder GM, um das Ausweichen des Verteidigers aufzuloesen.",
+      "noSocketlib": "Cyberpunk RED - Evasion Workflow benoetigt das Modul socketlib, das nicht aktiv ist.",
+      "noSocketFlag": "Cyberpunk RED - Evasion Workflow konnte seinen Socket nicht registrieren. Stelle sicher, dass das Modul-Manifest \"socket\": true enthaelt, starte Foundry neu und lade die Welt neu.",
+      "emitFailed": "Der steuernde Benutzer von {target} konnte nicht erreicht werden, um das Ausweichen aufzuloesen (moeglicherweise getrennt). Bitte die Verteidigung manuell aufloesen."
+    }
+  }
+}

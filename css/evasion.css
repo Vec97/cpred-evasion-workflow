@@ -1,0 +1,70 @@
+/* cpred-evasion-workflow - prompt + result card styling.
+ * Reuses cyberpunk-red-core --cpr-* variables (with safe fallbacks) so it themes
+ * with the system, mirroring diwako's fg-red / fg-green + chat success/failure colors.
+ */
+
+.cpr-evasion-prompt {
+  padding: 10px;
+  background: var(--cpr-background-window, rgba(0, 0, 0, 0.15));
+  border: 1px solid var(--cpr-background-border, rgba(125, 0, 0, 0.5));
+  border-radius: 4px;
+}
+
+.cpr-evasion-title {
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  color: var(--cpr-color-red, #b90202);
+}
+
+.cpr-evasion-body {
+  margin-bottom: 8px;
+}
+
+.cpr-evasion-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.cpr-evasion-btn {
+  flex: 1;
+  margin: 2px;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 3px;
+  font-weight: bold;
+}
+
+.cpr-evasion-btn.evade {
+  color: var(--cpr-text-chat-success, #2d9f36);
+}
+
+.cpr-evasion-btn.tank {
+  color: var(--cpr-color-red, #b90202);
+}
+
+.cpr-evasion-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cpr-evasion-result {
+  padding: 6px 8px;
+  border-radius: 3px;
+  font-weight: bold;
+}
+
+.cpr-evasion-result.dodged {
+  background: var(--cpr-text-chat-success, #2d9f36);
+  color: #ffffff;
+}
+
+.cpr-evasion-result.hit {
+  background: var(--cpr-text-chat-failure, #b90202);
+  color: #ffffff;
+}
+
+.cpr-evasion-result.tanked {
+  background: var(--cpr-background-window, rgba(0, 0, 0, 0.2));
+  color: var(--color-text-dark-primary, #191813);
+}
