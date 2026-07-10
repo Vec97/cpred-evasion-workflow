@@ -22,7 +22,12 @@
  *  executeAsGM) makes the caller fall back to the "attacker rolls damage manually" result card.
  */
 import { LOG } from "./constants.js";
-import { getDamageRollType, getAimedRollType, getRenderRollCard } from "./cprSystem.js";
+import {
+  getDamageRollType,
+  getAimedRollType,
+  getAutofireRollType,
+  getRenderRollCard,
+} from "./cprSystem.js";
 
 /**
  * Roll + apply the attacker's weapon damage to the target. Runs on the GM client.
@@ -47,6 +52,8 @@ export async function onDamageRequest(payload) {
     defTokenId,
     defSceneId,
     aimed,
+    autofire,
+    autofireMult,
   } = payload;
 
   // (1) Resolve the ATTACKER actor (token-first so unlinked tokens use their own actor).
@@ -74,20 +81,39 @@ export async function onDamageRequest(payload) {
     return { applied: false, reason: "noTarget" };
   }
 
-  // (4) Build + roll the weapon damage through the system pipeline. An Aimed Shot is rolled as an
-  //     aimed damage roll (isAimed=true) so the hit-location / headshot rules apply; otherwise a
-  //     plain single-shot damage roll (location "body").
-  const dmg = aimed
-    ? weapon.createRoll(getDamageRollType(), atkActor, { damageType: getAimedRollType() })
-    : weapon.createRoll(getDamageRollType(), atkActor);
+  // (4) Build + roll the weapon damage through the system pipeline, matching the attack's fire mode:
+  //   - Aimed Shot -> aimed damage roll (isAimed) at the attacker's chosen location (headshot rules)
+  //   - Autofire   -> 2d6 autofire roll multiplied by how much the attack beat the DV (autofireMult)
+  //   - otherwise  -> plain single-shot damage roll (location "body")
+  // Autofire whose multiplier we could not compute (no autofire DV table) cannot be auto-rolled
+  // correctly -> fall back to manual instead of guessing the multiplier.
+  if (autofire && (autofireMult == null || Number.isNaN(autofireMult))) {
+    console.warn(`${LOG} | onDamageRequest: autofire with no multiplier (missing autofire DV) -> manual`, payload);
+    return { applied: false, reason: "autofireNoMult" };
+  }
+
+  let dmg;
+  if (aimed) {
+    dmg = weapon.createRoll(getDamageRollType(), atkActor, { damageType: getAimedRollType() });
+  } else if (autofire) {
+    dmg = weapon.createRoll(getDamageRollType(), atkActor, { damageType: getAutofireRollType() });
+  } else {
+    dmg = weapon.createRoll(getDamageRollType(), atkActor);
+  }
   if (!dmg) {
     console.warn(`${LOG} | onDamageRequest: weapon.createRoll(DAMAGE) returned null`, payload);
     return { applied: false, reason: "noRoll" };
   }
-  // Honor the location the attacker deliberately aimed at (stored on the attacker actor when the
-  // aimed attack was made). Defaults to "head" - an aimed shot with no stored location aims high.
+
   if (aimed) {
+    // Honor the location the attacker deliberately aimed at (stored on the attacker actor when the
+    // aimed attack was made). Defaults to "head" - an aimed shot with no stored location aims high.
     dmg.location = atkActor.getFlag(game.system.id, "aimedLocation") || "head";
+  }
+  if (autofire) {
+    // Real autofire multiplier = how much the attack beat the DV by (min 1). roll() then caps it at
+    // the weapon's autofire max, which the system already set on the roll when it was built.
+    dmg.autofireMultiplier = Math.max(1, autofireMult);
   }
   await dmg.roll();
 

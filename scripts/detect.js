@@ -15,7 +15,7 @@ export async function onCreateChatMessage(message) {
   // (1) Run only on the acting (attacker's) client. Guarantees single run.
   if (game.userId != message._source.author) return;
 
-  // (2) Idempotency: skip our own prompt / result / skill cards (they carry our flag).
+  // (2) Idempotency: skip our own prompt / result / skill / damage cards (they carry our flag).
   if (message.flags?.[MODULE_ID]) return;
 
   // (3) Build a DOM tree from the card content.
@@ -35,16 +35,18 @@ export async function onCreateChatMessage(message) {
   const subtitle = DIV.querySelector("div.rollcard-subtitle-center.text-small")?.innerHTML?.trim();
   if (subtitle === game.i18n.localize("CPR.rolls.suppressiveFire")) return;
 
-  // (6) Resolve target (the attacker's current target at message-creation time).
-  const target = message.author.targets.first();
-  if (!target) {
+  // (6) Targets: process EVERY targeted token as its own workflow (multi-target support). Each
+  //     target gets its own DV, responsible user and requestId; the shared attack roll is compared
+  //     against each. Normal single-target play is simply a one-element loop.
+  const targets = Array.from(message.author.targets ?? []);
+  if (targets.length === 0) {
     if (Settings.get("logMissingTarget")) {
       console.log(`${LOG} | ${game.i18n.localize(`${MODULE_ID}.error.noTarget`)}`);
     }
     return;
   }
 
-  // (7) Resolve attacker token/actor/weapon exactly as diwako.
+  // (7) Resolve attacker token/actor/weapon exactly as diwako (shared across all targets).
   let atkToken =
     message.speaker?.token ||
     canvas.scene.tokens.get(data.tokenId) ||
@@ -57,55 +59,86 @@ export async function onCreateChatMessage(message) {
   const weapon = atkActor.items.get(data.itemId);
   if (!weapon) return;
 
-  // (8) Scrape the attack total (only source - the system sets no flags/rolls).
+  // (8) Scrape the shared attack total (only source - the system sets no flags/rolls).
   const totalSpan = DIV.querySelector("span.clickable[data-action='toggleVisibility']");
   const attackTotal = parseInt(totalSpan?.innerHTML, 10);
   if (Number.isNaN(attackTotal)) return;
 
-  // (9) Resolve defender token + actor.
-  const defToken = target.document;
-  const defActor = defToken.actor;
-  if (!defActor) return;
-
-  // (10) Branch off the WEAPON ITEM (mirrors cpr-attackable.js). thrownWeapon -> melee path.
+  // (9) Shared, per-attack facts (independent of which token is targeted).
   const isRangedPrompt =
     weapon.system.isRanged && weapon.system.weaponType !== "thrownWeapon";
-
-  // (10b) Attacker token DOCUMENT, resolved once. Needed for the DV computation AND carried in
-  // the payload so the GM damage step can find the attacker/weapon and set the damage-card speaker.
   const atkTokenDoc =
     canvas.scene?.tokens.get(data.tokenId) ??
     (typeof message.speaker?.token === "string"
       ? canvas.scene?.tokens.get(message.speaker.token)
       : null) ??
     (atkActor ? canvas.scene?.tokens.getName(atkActor.prototypeToken.name) : null);
-
-  // (10c) Auto-damage eligibility, computed on the attacker client. Grenades/rockets/thrown and
-  // autofire are excluded (user: "keine Granaten"; autofire multiplier is out of scope). Aimed
-  // shots ARE eligible and are rolled as a located damage roll on the GM client.
-  const damageEligible = computeDamageEligible(weapon, subtitle);
-  // Whether this was an Aimed Shot -> its damage is rolled as an aimed (head/limb) damage roll.
+  const damageEligible = computeDamageEligible(weapon);
   const aimed = subtitle === game.i18n.localize("CPR.rolls.aimedShot");
+  const autofire = subtitle === game.i18n.localize("CPR.global.itemType.skill.autofire");
+  const atkName = atkToken?.name ?? atkActor.name;
 
-  // (10d) BLIND DECISION: we NO LONGER gate the ranged prompt on a hit. The target must choose
-  // Evade/Tank BEFORE learning hit/miss (otherwise they meta-game the better option). Instead we
-  // compute the DV HERE on the attacker client and ship the raw number in the payload; the Tank
-  // resolution later decides hit/miss from it (attackTotal > dv) without the defender seeing it
-  // first. dv=null => undeterminable (Tank then counts as a hit so the feature never silently
-  // eats a shot). Melee is opposed by the Evasion roll itself and needs no DV.
+  const shared = {
+    message,
+    subtitle,
+    atkActor,
+    atkTokenDoc,
+    weapon,
+    attackTotal,
+    isRangedPrompt,
+    damageEligible,
+    aimed,
+    autofire,
+    atkName,
+  };
+
+  // (10) Run the Evade/Tank (or auto-melee) workflow once per targeted token.
+  for (const target of targets) {
+    // eslint-disable-next-line no-await-in-loop
+    await resolveTargetWorkflow(target, shared);
+  }
+}
+
+/**
+ * Run the evade/tank (ranged) or auto-melee workflow for ONE targeted token against the shared
+ * attack. Computes the target-specific DV (for the blind Tank resolution and the autofire
+ * multiplier), the responsible user, and a per-target requestId, then routes it via socketlib.
+ * @param {Token} target the targeted token placeable
+ * @param {object} shared per-attack facts from onCreateChatMessage
+ */
+async function resolveTargetWorkflow(target, shared) {
+  const {
+    message,
+    subtitle,
+    atkActor,
+    atkTokenDoc,
+    weapon,
+    attackTotal,
+    isRangedPrompt,
+    damageEligible,
+    aimed,
+    autofire,
+    atkName,
+  } = shared;
+
+  const defToken = target.document;
+  const defActor = defToken?.actor;
+  if (!defActor) return;
+
+  // BLIND DECISION: compute the DV on the attacker client and ship it in the payload so the Tank
+  // resolution can decide hit/miss WITHOUT the defender seeing it first. Melee needs no DV.
+  // dv=null => undeterminable (Tank then counts as a hit so a shot is never silently eaten).
   let dv = null;
   if (isRangedPrompt) {
-    const res = await Utils.getRangedDV({ atkToken: atkTokenDoc, target, weapon, subtitle });
-    dv = res.dv;
+    dv = (await Utils.getRangedDV({ atkToken: atkTokenDoc, target, weapon, subtitle })).dv;
   }
+  // Autofire damage multiplier = how much the attack beat the (autofire) DV by, min 1; null when
+  // the DV is unknown (damage.js then falls back to a manual damage roll for autofire).
+  const autofireMult = autofire && dv != null ? Math.max(1, attackTotal - dv) : null;
 
-  // (11) Stable requestId: one attack message => one workflow.
-  const requestId = `${message.id}`;
-
-  // (12) Determine the defender's single responsible user.
+  // Per-target one-shot key: one attack message x one target => one workflow.
+  const requestId = `${message.id}-${defToken.id}`;
   const defenderUserId = Sockets.resolveResponsibleUser(defActor);
-
-  const atkName = atkToken?.name ?? atkActor.name;
   const defName = defToken.name ?? defActor.name;
 
   const basePayload = {
@@ -124,11 +157,12 @@ export async function onCreateChatMessage(message) {
     attackerTokenId: atkTokenDoc?.id ?? null,
     attackerSceneId: atkTokenDoc?.parent?.id ?? canvas.scene?.id,
     weaponId: weapon.id,
-    // Whether auto-damage may run for this attack (still further gated by the autoDamage setting
-    // and by an active GM at resolution time).
+    // Whether auto-damage may run (still gated by the autoDamage setting + an active GM).
     damageEligible,
-    // Aimed Shot -> the GM damage step rolls an aimed (located) damage roll instead of a plain one.
+    // Fire mode -> the GM damage step rolls an aimed (located) or autofire (x multiplier) roll.
     aimed,
+    autofire,
+    autofireMult,
   };
 
   // Local (this-client) GM resolution helper, reused by the no-user and emit-failure paths.
@@ -157,7 +191,7 @@ export async function onCreateChatMessage(message) {
     return;
   }
 
-  // (13a) RANGED path.
+  // RANGED path (prompt).
   if (isRangedPrompt) {
     if (!Settings.get("enableRangedPrompt")) return;
     const canEvadeRanged = computeCanEvadeRanged(defActor);
@@ -174,7 +208,7 @@ export async function onCreateChatMessage(message) {
     return;
   }
 
-  // (13b) MELEE path (incl. thrownWeapon). No prompt.
+  // MELEE path (incl. thrownWeapon). No prompt.
   if (!Settings.get("enableAutoMelee")) return;
   try {
     await Sockets.emitMelee(defenderUserId, { ...basePayload, isMelee: true });
@@ -228,23 +262,16 @@ function computeCanEvadeRanged(defActor) {
 }
 
 /**
- * Whether the fired weapon+shot qualifies for the auto-damage step.
- * Excludes (user rules): grenade/rocket launchers and thrown weapons (AoE / "keine Granaten"),
- * and autofire / aimed shots (out of scope for the single-target auto-apply). Basic single-shot
- * ranged and any melee weapon are eligible. Only the shot's subtitle distinguishes autofire/aimed
- * (same limitation as the rest of the detection - the card carries no flags).
+ * Whether the fired weapon qualifies for the auto-damage step. Excludes only AoE / explosive and
+ * thrown weapons (grenade/rocket launchers, thrown) per the user's "keine Granaten" rule. Basic
+ * single-shot ranged, aimed shots, autofire, and any melee weapon are eligible - damage.js rolls
+ * the matching damage kind (autofire falls back to manual only when its multiplier is unknown).
  * @param {Item} weapon
- * @param {string} [subtitle] attack-card subtitle
  * @returns {boolean}
  */
-function computeDamageEligible(weapon, subtitle) {
+function computeDamageEligible(weapon) {
   const excluded = ["grenadeLauncher", "rocketLauncher", "thrownWeapon"];
-  if (excluded.includes(weapon.system?.weaponType)) return false;
-  // Autofire damage uses a per-shot multiplier we do not compute -> leave it manual.
-  // Aimed shots ARE eligible: damage.js rolls them as a located (head/limb) damage roll.
-  const autofireLabel = game.i18n.localize("CPR.global.itemType.skill.autofire");
-  if (subtitle && subtitle === autofireLabel) return false;
-  return true;
+  return !excluded.includes(weapon.system?.weaponType);
 }
 
 /**
@@ -325,9 +352,8 @@ function computeBlindWhisper(message, content) {
   const subtitle = DIV.querySelector("div.rollcard-subtitle-center.text-small")?.innerHTML?.trim();
   if (subtitle === game.i18n.localize("CPR.rolls.suppressiveFire")) return null;
 
-  const target = game.user?.targets?.first?.() ?? message.author?.targets?.first?.();
-  const defActor = target?.document?.actor;
-  if (!defActor) return null;
+  const targets = Array.from(game.user?.targets ?? message.author?.targets ?? []);
+  if (targets.length === 0) return null;
 
   // Only RANGED attacks are prompted (thrown -> melee, no choice), so only those need blinding.
   const atkToken =
@@ -339,11 +365,16 @@ function computeBlindWhisper(message, content) {
   if (!weapon) return null;
   if (!(weapon.system.isRanged && weapon.system.weaponType !== "thrownWeapon")) return null;
 
-  // Only blind when the responsible defender is a non-GM PLAYER. If it resolves to a GM (NPC or
-  // no active owner), the GM makes the call and should be allowed to see the roll.
-  const responsibleId = Sockets.resolveResponsibleUser(defActor);
-  const responsible = responsibleId ? game.users.get(responsibleId) : null;
-  if (!responsible || responsible.isGM) return null;
+  // Blind the roll if ANY targeted token is controlled by a non-GM PLAYER (a GM-only target needs
+  // no blinding - the GM adjudicates and may see the roll).
+  const anyPlayerDefender = targets.some((t) => {
+    const dActor = t?.document?.actor;
+    if (!dActor) return false;
+    const rid = Sockets.resolveResponsibleUser(dActor);
+    const r = rid ? game.users.get(rid) : null;
+    return !!r && !r.isGM;
+  });
+  if (!anyPlayerDefender) return null;
 
   // Whisper to every GM plus the attacker (this client). Every player - including the defender and
   // any bystander who could coach them - is excluded, so nobody metagames the roll size.
