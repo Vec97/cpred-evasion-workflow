@@ -40,6 +40,10 @@
         "name": "Hide the attack roll from the defending player",
         "hint": "When on, a ranged attack roll aimed at a player-controlled target is whispered to the GM and attacker only, so the defending player must choose Evade or Tank BEFORE seeing how high the roll is (anti-metagame). The numbers appear in the result card after they decide. Targets controlled by the GM (NPCs) are never blinded. Requires the ranged prompt to be enabled."
       },
+      "announceCritInjury": {
+        "name": "Announce the critical injury on a crit",
+        "hint": "When an auto-rolled damage roll scores a Critical Injury (two or more 6s), roll the matching critical injury table (head or body, by hit location) and post which injury resulted. It is NOT added to the character sheet - apply it manually if you want it. Only fires when damage is auto-rolled by this module."
+      },
       "logMissingTarget": {
         "name": "Log attacks with no target",
         "hint": "When on, log a console note if an attack card has no target (mirrors Diwako). Off by default to reduce noise."
@@ -55,16 +59,22 @@
       "timedOut": "{target} did not respond in time - the hit stands."
     },
     "result": {
-      "dodged": "{target} DODGED! Evasion {evasion} beats attack {attack}. Attack negated.",
-      "failed": "{target} FAILED to evade. Evasion {evasion} vs attack {attack}.",
-      "tanked": "{target} chose to tank the hit.",
+      "dodged": "{target} evades - Evasion {evasion} vs attack {attack}. Attack negated.",
+      "failed": "{target} fails to evade - Evasion {evasion} vs attack {attack}.",
+      "tanked": "{target} takes the hit.",
       "missedAnyway": "{target} braced to tank, but the shot missed anyway (attack {attack} vs DV {dv}). No damage.",
-      "meleeDodged": "{target} evaded the melee attack. Evasion {evasion} vs attack {attack}. Attack negated.",
-      "meleeHit": "{target} was hit in melee. Evasion {evasion} vs attack {attack}.",
-      "meleeDodgedUntrained": "{target} (untrained) evaded the melee attack with a bare REF/DEX roll. {evasion} vs attack {attack}. Attack negated.",
-      "meleeHitUntrained": "{target} (untrained, no Evasion skill) was hit in melee. Bare defense {evasion} vs attack {attack}.",
-      "damageAuto": "Damage {damage} was rolled and applied automatically.",
+      "meleeDodged": "{target} evades the melee attack - Evasion {evasion} vs attack {attack}. Attack negated.",
+      "meleeHit": "{target} is hit in melee - Evasion {evasion} vs attack {attack}.",
+      "meleeDodgedUntrained": "{target} (untrained) evades the melee attack with a bare REF/DEX roll - {evasion} vs attack {attack}. Attack negated.",
+      "meleeHitUntrained": "{target} (untrained, no Evasion skill) is hit in melee - bare defense {evasion} vs attack {attack}.",
+      "damageAuto": "Damage {damage} rolled and applied automatically.",
       "damageManual": "Hit stands - attacker rolls damage via the Roll Damage button."
+    },
+    "crit": {
+      "line": "{target} takes a Critical Injury ({loc}): {injury} - rolled {roll} on 2d6. (Not applied to the sheet.)",
+      "unknown": "{target} scored a Critical Injury ({loc}), but the injury table could not be read.",
+      "head": "Head",
+      "body": "Body"
     },
     "error": {
       "noEvasionSkill": "{target} has no usable Evasion skill and could not defend.",

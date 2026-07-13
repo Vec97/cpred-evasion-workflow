@@ -2,7 +2,7 @@
   "id": "cpred-evasion-workflow",
   "title": "Cyberpunk RED - Evasion Workflow",
   "description": "Interactive Evasion/Dodge workflow for Cyberpunk RED. On a ranged attack the target's controlling user is prompted to Evade (Ausweichen) or Tank (Tanken) BEFORE hit/miss is revealed (blind decision), and Diwako's spoiler hit/miss line is optionally suppressed. Melee and thrown-in-melee attacks auto-resolve the opposed Evasion roll with no prompt. On a confirmed hit the module can optionally auto-roll AND apply the weapon damage via the system's own damage pipeline (GM-routed; grenades/rockets/thrown and autofire/aimed shots fall back to the manual Roll Damage button). Coexists with diwako-cpred-additions without modifying it.",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "authors": [{ "name": "yioxar", "flags": {} }],
   "socket": true,
   "esmodules": ["scripts/main.js"],
@@ -29,5 +29,5 @@
   "compatibility": { "minimum": "12.343", "maximum": "12.999", "verified": "12.343" },
   "url": "https://github.com/Vec97/cpred-evasion-workflow",
   "manifest": "https://github.com/Vec97/cpred-evasion-workflow/releases/latest/download/module.json",
-  "download": "https://github.com/Vec97/cpred-evasion-workflow/releases/download/v0.5.0/module.zip"
+  "download": "https://github.com/Vec97/cpred-evasion-workflow/releases/download/v0.6.0/module.zip"
 }

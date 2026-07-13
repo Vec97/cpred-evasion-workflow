@@ -93,6 +93,15 @@ export class Settings {
       default: true,
     });
 
+    game.settings.register(MODULE_ID, "announceCritInjury", {
+      name: game.i18n.localize(`${MODULE_ID}.settings.announceCritInjury.name`),
+      hint: game.i18n.localize(`${MODULE_ID}.settings.announceCritInjury.hint`),
+      scope: "world",
+      config: true,
+      type: Boolean,
+      default: true,
+    });
+
     game.settings.register(MODULE_ID, "logMissingTarget", {
       name: game.i18n.localize(`${MODULE_ID}.settings.logMissingTarget.name`),
       hint: game.i18n.localize(`${MODULE_ID}.settings.logMissingTarget.hint`),

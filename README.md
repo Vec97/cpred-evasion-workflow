@@ -49,6 +49,12 @@ is no separate *Roll Damage* → *Apply* clicking (`Auto-roll and apply damage o
 - **Excluded** (fall back to the manual *Roll Damage* button): grenade/rocket launchers and thrown
   weapons. Regular ranged (single-shot, aimed, autofire) and melee weapons are eligible. If no GM
   is connected, it also falls back to manual.
+- **Critical injuries:** on a crit (two or more 6s on the damage), the matching critical injury
+  table (head or body by hit location) is rolled and the resulting injury is posted to chat —
+  **informational only, not added to the sheet**. Optional (*Announce the critical injury on a crit*).
+
+Result cards are intentionally **low-key** (a muted accent + faint tint, not bold red/green blocks)
+and theme-aware for a light or dark chat log.
 
 ## Requirements
 
@@ -81,6 +87,7 @@ is no separate *Roll Damage* → *Apply* clicking (`Auto-roll and apply damage o
 | Auto-roll and apply damage on a hit | on | Roll + apply weapon damage automatically (see exclusions). |
 | Hide Diwako's hit/miss line | on | Suppress Diwako's spoiler hit/miss chat line. |
 | Hide the attack roll from the defending player | on | Whisper the attack roll away from the defender player (anti-metagame). |
+| Announce the critical injury on a crit | on | On a crit (2+ sixes), roll & post which critical injury resulted (not applied to the sheet). |
 | Log attacks with no target | off | Console note when an attack has no target. |
 
 ## How it works (technical)

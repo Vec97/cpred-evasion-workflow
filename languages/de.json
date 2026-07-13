@@ -40,6 +40,10 @@
         "name": "Angriffswurf vor dem verteidigenden Spieler verbergen",
         "hint": "Wenn an, wird ein Fernkampf-Angriffswurf auf ein spielergesteuertes Ziel nur dem GM und dem Angreifer zugefluestert, damit der verteidigende Spieler Ausweichen oder Tanken waehlen muss, BEVOR er sieht, wie hoch der Wurf ist (gegen Metagaming). Die Zahlen erscheinen nach der Entscheidung in der Ergebniskarte. Vom GM gesteuerte Ziele (NPCs) werden nie verborgen. Erfordert, dass die Fernkampf-Abfrage aktiv ist."
       },
+      "announceCritInjury": {
+        "name": "Kritische Wunde bei Krit ausgeben",
+        "hint": "Wenn ein automatisch gewuerfelter Schadenswurf eine Kritische Wunde erzielt (zwei oder mehr Sechsen), wird die passende Tabelle (Kopf oder Koerper, nach Trefferzone) gewuerfelt und ausgegeben, welche Wunde entstanden ist. Sie wird NICHT am Charakterbogen eingetragen - das machst du bei Bedarf selbst. Greift nur bei Schaden, den dieses Modul automatisch wuerfelt."
+      },
       "logMissingTarget": {
         "name": "Angriffe ohne Ziel protokollieren",
         "hint": "Wenn an, wird eine Konsolennotiz protokolliert, falls eine Angriffskarte kein Ziel hat (wie bei Diwako). Standardmaessig aus, um Rauschen zu reduzieren."
@@ -55,16 +59,22 @@
       "timedOut": "{target} hat nicht rechtzeitig reagiert - der Treffer bleibt bestehen."
     },
     "result": {
-      "dodged": "{target} ist AUSGEWICHEN! Ausweichen {evasion} schlaegt Angriff {attack}. Angriff abgewehrt.",
-      "failed": "{target} konnte NICHT ausweichen. Ausweichen {evasion} gegen Angriff {attack}.",
+      "dodged": "{target} weicht aus - Ausweichen {evasion} gegen Angriff {attack}. Angriff abgewehrt.",
+      "failed": "{target} weicht nicht aus - Ausweichen {evasion} gegen Angriff {attack}.",
       "tanked": "{target} nimmt den Treffer hin.",
       "missedAnyway": "{target} wollte tanken, aber der Schuss ging daneben (Angriff {attack} gegen DV {dv}). Kein Schaden.",
-      "meleeDodged": "{target} ist dem Nahkampfangriff ausgewichen. Ausweichen {evasion} gegen Angriff {attack}. Angriff abgewehrt.",
-      "meleeHit": "{target} wurde im Nahkampf getroffen. Ausweichen {evasion} gegen Angriff {attack}.",
-      "meleeDodgedUntrained": "{target} (untrainiert) ist dem Nahkampfangriff mit einem blanken REF/DEX-Wurf ausgewichen. {evasion} gegen Angriff {attack}. Angriff abgewehrt.",
-      "meleeHitUntrained": "{target} (untrainiert, keine Fertigkeit Evasion) wurde im Nahkampf getroffen. Blanke Verteidigung {evasion} gegen Angriff {attack}.",
-      "damageAuto": "Schaden {damage} wurde automatisch gewuerfelt und angewendet.",
+      "meleeDodged": "{target} weicht dem Nahkampfangriff aus - Ausweichen {evasion} gegen Angriff {attack}. Angriff abgewehrt.",
+      "meleeHit": "{target} wird im Nahkampf getroffen - Ausweichen {evasion} gegen Angriff {attack}.",
+      "meleeDodgedUntrained": "{target} (untrainiert) weicht dem Nahkampfangriff mit einem blanken REF/DEX-Wurf aus - {evasion} gegen Angriff {attack}. Angriff abgewehrt.",
+      "meleeHitUntrained": "{target} (untrainiert, keine Fertigkeit Evasion) wird im Nahkampf getroffen - blanke Verteidigung {evasion} gegen Angriff {attack}.",
+      "damageAuto": "Schaden {damage} automatisch gewuerfelt und angewendet.",
       "damageManual": "Treffer bleibt bestehen - der Angreifer wuerfelt Schaden ueber die Schaden-wuerfeln-Schaltflaeche."
+    },
+    "crit": {
+      "line": "{target} erleidet eine Kritische Wunde ({loc}): {injury} - {roll} auf 2W6 gewuerfelt. (Nicht am Bogen eingetragen.)",
+      "unknown": "{target} erzielt eine Kritische Wunde ({loc}), aber die Wunden-Tabelle konnte nicht gelesen werden.",
+      "head": "Kopf",
+      "body": "Koerper"
     },
     "error": {
       "noEvasionSkill": "{target} hat keine nutzbare Fertigkeit Evasion und konnte sich nicht verteidigen.",

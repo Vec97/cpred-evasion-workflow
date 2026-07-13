@@ -1,20 +1,21 @@
 /* cpred-evasion-workflow - prompt + result card styling.
- * Reuses cyberpunk-red-core --cpr-* variables (with safe fallbacks) so it themes
- * with the system, mirroring diwako's fg-red / fg-green + chat success/failure colors.
+ * Low-key styling: a coloured left accent + a faint tint instead of loud full-colour blocks, so
+ * results read as calm status lines. Text colour is inherited (theme-aware: works on a light or
+ * dark chat log). Muted green/terracotta replace the old bold red/green.
  */
 
 .cpr-evasion-prompt {
-  padding: 10px;
-  background: var(--cpr-background-window, rgba(0, 0, 0, 0.15));
-  border: 1px solid var(--cpr-background-border, rgba(125, 0, 0, 0.5));
-  border-radius: 4px;
+  padding: 8px 10px;
+  border-radius: 5px;
+  border: 1px solid var(--cpr-background-border, rgba(128, 128, 128, 0.35));
+  background: rgba(128, 128, 128, 0.06);
 }
 
 .cpr-evasion-title {
-  font-weight: bold;
-  text-transform: uppercase;
+  font-weight: 600;
   margin-bottom: 4px;
-  color: var(--cpr-color-red, #b90202);
+  opacity: 0.85;
+  letter-spacing: 0.02em;
 }
 
 .cpr-evasion-body {
@@ -23,48 +24,71 @@
 
 .cpr-evasion-buttons {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .cpr-evasion-btn {
   flex: 1;
-  margin: 2px;
-  padding: 4px 8px;
+  padding: 5px 8px;
   cursor: pointer;
-  border-radius: 3px;
-  font-weight: bold;
+  border-radius: 5px;
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  background: rgba(128, 128, 128, 0.1);
+  font-weight: 500;
 }
 
 .cpr-evasion-btn.evade {
-  color: var(--cpr-text-chat-success, #2d9f36);
+  border-color: rgba(63, 158, 90, 0.55);
 }
 
 .cpr-evasion-btn.tank {
-  color: var(--cpr-color-red, #b90202);
+  border-color: rgba(192, 85, 63, 0.55);
+}
+
+.cpr-evasion-btn:hover:not(:disabled) {
+  background: rgba(128, 128, 128, 0.2);
 }
 
 .cpr-evasion-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
+/* Result lines: faint tinted background + a coloured accent bar. Not bold, not full-colour. */
 .cpr-evasion-result {
-  padding: 6px 8px;
-  border-radius: 3px;
-  font-weight: bold;
+  padding: 6px 10px;
+  border-radius: 5px;
+  border-left: 3px solid var(--cpr-evw-accent, rgba(128, 128, 128, 0.6));
+  background: var(--cpr-evw-tint, rgba(128, 128, 128, 0.08));
+  font-weight: normal;
+  line-height: 1.35;
 }
 
 .cpr-evasion-result.dodged {
-  background: var(--cpr-text-chat-success, #2d9f36);
-  color: #ffffff;
+  --cpr-evw-accent: #3f9e5a;
+  --cpr-evw-tint: rgba(63, 158, 90, 0.1);
 }
 
 .cpr-evasion-result.hit {
-  background: var(--cpr-text-chat-failure, #b90202);
-  color: #ffffff;
+  --cpr-evw-accent: #c0553f;
+  --cpr-evw-tint: rgba(192, 85, 63, 0.1);
 }
 
 .cpr-evasion-result.tanked {
-  background: var(--cpr-background-window, rgba(0, 0, 0, 0.2));
-  color: var(--color-text-dark-primary, #191813);
+  --cpr-evw-accent: rgba(128, 128, 128, 0.7);
+  --cpr-evw-tint: rgba(128, 128, 128, 0.08);
+}
+
+/* Critical-injury announcement: a muted amber accent so it stands out without shouting. */
+.cpr-evasion-crit {
+  padding: 6px 10px;
+  border-radius: 5px;
+  border-left: 3px solid #b58b2e;
+  background: rgba(181, 139, 46, 0.12);
+  font-weight: normal;
+  line-height: 1.35;
+}
+
+.cpr-evasion-crit .cpr-evw-crit-name {
+  font-weight: 600;
 }

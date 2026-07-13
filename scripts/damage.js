@@ -22,12 +22,14 @@
  *  executeAsGM) makes the caller fall back to the "attacker rolls damage manually" result card.
  */
 import { LOG } from "./constants.js";
+import { Settings } from "./settings.js";
 import {
   getDamageRollType,
   getAimedRollType,
   getAutofireRollType,
   getRenderRollCard,
 } from "./cprSystem.js";
+import { announceCriticalInjury } from "./critical.js";
 
 /**
  * Roll + apply the attacker's weapon damage to the target. Runs on the GM client.
@@ -176,6 +178,17 @@ export async function onDamageRequest(payload) {
   console.log(
     `${LOG} | onDamageRequest: applied ${totalDamage} (+${bonusDamage} crit) to ${targetActor.name} @ ${location}`
   );
+
+  // Optional: on a Critical Injury (2+ sixes) roll & announce which injury resulted. Purely
+  // informational - it is NOT added to the actor. Runs here on the GM client (compendium access).
+  if (criticalCard && Settings.get("announceCritInjury")) {
+    try {
+      await announceCriticalInjury({ location, targetName: targetActor.name });
+    } catch (e) {
+      console.warn(`${LOG} | announceCriticalInjury failed`, e);
+    }
+  }
+
   return {
     applied: true,
     total: totalDamage,
